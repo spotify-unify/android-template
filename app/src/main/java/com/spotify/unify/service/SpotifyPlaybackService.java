@@ -14,7 +14,7 @@ import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.Spotify;
 
-public class SpotifyService extends Service implements PlayerNotificationCallback, ConnectionStateCallback {
+public class SpotifyPlaybackService extends Service implements PlayerNotificationCallback, ConnectionStateCallback {
 
 	private static final String TAG = "PlayerService";
 
@@ -63,7 +63,7 @@ public class SpotifyService extends Service implements PlayerNotificationCallbac
 		mListener = listener;
 	}
 
-	public SpotifyService() {
+	public SpotifyPlaybackService() {
 
 	}
 
@@ -74,8 +74,8 @@ public class SpotifyService extends Service implements PlayerNotificationCallbac
 	}
 
 	public class LocalBinder extends Binder {
-		public SpotifyService getService() {
-			return SpotifyService.this;
+		public SpotifyPlaybackService getService() {
+			return SpotifyPlaybackService.this;
 		}
 	}
 
@@ -85,8 +85,8 @@ public class SpotifyService extends Service implements PlayerNotificationCallbac
 		mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
 			@Override
 			public void onInitialized(Player player) {
-				mPlayer.addConnectionStateCallback(SpotifyService.this);
-				mPlayer.addPlayerNotificationCallback(SpotifyService.this);
+				mPlayer.addConnectionStateCallback(SpotifyPlaybackService.this);
+				mPlayer.addPlayerNotificationCallback(SpotifyPlaybackService.this);
 				mListener.onPlayerInitialized(mPlayer);
 			}
 

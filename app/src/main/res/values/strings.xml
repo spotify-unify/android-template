@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">unify</string>
+    <string name="app_name">Unify Something</string>
     <string name="hello_world">Hello world!</string>
+    <string name="hello_x">Hello %1$s!</string>
     <string name="action_settings">Settings</string>
 
 </resources>

@@ -23,7 +23,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <service
-            android:name=".service.SpotifyService"
+            android:name=".service.SpotifyPlaybackService"
             android:exported="false" >
         </service>
     </application>

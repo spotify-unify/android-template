@@ -35,4 +35,11 @@ dependencies {
 
     // This library handles music playback
     compile 'com.spotify.sdk:spotify-player:1.0.0-beta10@aar'
+
+    // Web API libs dependencies
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp:okhttp:2.2.0'
+
+    // Image loading cutie
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

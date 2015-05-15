@@ -5,33 +5,54 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
+import kaaes.spotify.webapi.android.SpotifyApi;
+
 public class SpotifyClient {
 
-	private static final String TAG = "SpotifyClient";
+	public interface ClientListener {
+		void onClientReady(SpotifyApi spotifyApi);
+		void onAccessError();
+	}
+
+	private static final String TAG = SpotifyClient.class.getSimpleName();
+
+	private SpotifyPlaybackService mSpotifyPlaybackService;
 	private final Activity mActivity;
-	private SpotifyService mSpotifyService;
-	private SpotifyService.Listener mListener;
+	private final SpotifyPlaybackService.Listener mListener;
+	private final ClientListener mClientListener;
+	private String mToken;
+	private SpotifyApi mSpotifyApi;
 
 
-	public SpotifyClient(Activity activity, SpotifyService.Listener listener) {
+	public SpotifyClient(
+			@NonNull Activity activity,
+			@NonNull SpotifyPlaybackService.Listener listener,
+			@NonNull ClientListener clientListener
+	) {
 		mActivity = activity;
 		mListener = listener;
+		mClientListener = clientListener;
 	}
 
 	public void onActivityResult(int requestCode, int responseCode, Intent data) {
-		String token = Authenticator.getToken(requestCode, responseCode, data);
-		if (TextUtils.isEmpty(token)) {
+		mToken = Authenticator.getToken(requestCode, responseCode, data);
+		if (TextUtils.isEmpty(mToken)) {
 			Log.e(TAG, "Failed to retrieve token");
+			mClientListener.onAccessError();
 		} else {
-			mSpotifyService.initializeWithToken(token);
+			mSpotifyPlaybackService.initializeWithToken(mToken);
+			mSpotifyApi = new SpotifyApi();
+			mSpotifyApi.setAccessToken(mToken);
+			mClientListener.onClientReady(mSpotifyApi);
 		}
 	}
 
 	public void connect() {
-		Intent intent = new Intent(mActivity.getApplicationContext(), SpotifyService.class);
+		Intent intent = new Intent(mActivity.getApplicationContext(), SpotifyPlaybackService.class);
 		mActivity.bindService(intent, mConnection, Activity.BIND_AUTO_CREATE);
 	}
 
@@ -39,20 +60,20 @@ public class SpotifyClient {
 		mActivity.unbindService(mConnection);
 	}
 
-	private void onPlayerServiceConnected(SpotifyService spotifyService) {
-		mSpotifyService = spotifyService;
-		mSpotifyService.setListener(mListener);
-		if (!mSpotifyService.hasToken() || !mSpotifyService.hasPlayer()) {
+	private void onPlayerServiceConnected(SpotifyPlaybackService spotifyPlaybackService) {
+		mSpotifyPlaybackService = spotifyPlaybackService;
+		mSpotifyPlaybackService.setListener(mListener);
+		if (!mSpotifyPlaybackService.hasToken() || !mSpotifyPlaybackService.hasPlayer()) {
 			Authenticator.authenticate(mActivity);
 		} else {
-			mListener.onPlayerInitialized(mSpotifyService.getPlayer());
+			mListener.onPlayerInitialized(mSpotifyPlaybackService.getPlayer());
 		}
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			onPlayerServiceConnected(((SpotifyService.LocalBinder) service).getService());
+			onPlayerServiceConnected(((SpotifyPlaybackService.LocalBinder) service).getService());
 		}
 
 		@Override
