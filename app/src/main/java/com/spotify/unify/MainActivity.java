@@ -3,118 +3,60 @@ package com.spotify.unify;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
-import com.spotify.sdk.android.player.Config;
-import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
-import com.spotify.sdk.android.player.Spotify;
+import com.spotify.unify.service.SpotifyClient;
+import com.spotify.unify.service.SpotifyService;
 
 
-public class MainActivity extends ActionBarActivity implements
-		PlayerNotificationCallback, ConnectionStateCallback {
+public class MainActivity extends ActionBarActivity {
 
-	private static final String CLIENT_ID = "86bb0f34c1aa4fea969be1d75a1dd6d6";
-	private static final String REDIRECT_URI = "unifyprotocol://callback";
+	public static final String TAG = "MainActivity";
 
-	// Request code that will be used to verify if the result comes from correct activity
-	private static final int REQUEST_CODE = 1337;
-
-	private Player mPlayer;
+	private SpotifyClient mSpotifyClient;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener);
+	}
 
-		AuthenticationRequest.Builder builder =
-				new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
-		builder.setScopes(new String[]{"user-read-private", "streaming"});
-		AuthenticationRequest request = builder.build();
+	@Override
+	protected void onStart() {
+		super.onStart();
+		mSpotifyClient.connect();
+	}
 
-		AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+	@Override
+	protected void onStop() {
+		mSpotifyClient.disconnect();
+		super.onStop();
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
+		mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
+	}
 
-		// Check if result comes from the correct activity
-		if (requestCode == REQUEST_CODE) {
-			AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-			if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-				Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
-				mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
-					@Override
-					public void onInitialized(Player player) {
-						mPlayer.addConnectionStateCallback(MainActivity.this);
-						mPlayer.addPlayerNotificationCallback(MainActivity.this);
-						mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
-					}
-
-					@Override
-					public void onError(Throwable throwable) {
-						Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-					}
-				});
-			}
+	private SpotifyService.Listener mPlayerServiceListener = new SpotifyService.Listener() {
+		@Override
+		public void onPlayerInitialized(Player player) {
+			player.play("spotify:track:2V6yO7x7gQuaRoPesMZ5hr");
 		}
-	}
 
-	@Override
-	public void onLoggedIn() {
-		Log.d("MainActivity", "User logged in");
-	}
+		@Override
+		public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
 
-	@Override
-	public void onLoggedOut() {
-		Log.d("MainActivity", "User logged out");
-	}
-
-	@Override
-	public void onLoginFailed(Throwable error) {
-		Log.d("MainActivity", "Login failed");
-	}
-
-	@Override
-	public void onTemporaryError() {
-		Log.d("MainActivity", "Temporary error occurred");
-	}
-
-	@Override
-	public void onConnectionMessage(String message) {
-		Log.d("MainActivity", "Received connection message: " + message);
-	}
-
-	@Override
-	public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
-		Log.d("MainActivity", "Playback event received: " + eventType.name());
-		switch (eventType) {
-			// Handle event type as necessary
-			default:
-				break;
 		}
-	}
 
-	@Override
-	public void onPlaybackError(ErrorType errorType, String errorDetails) {
-		Log.d("MainActivity", "Playback error received: " + errorType.name());
-		switch (errorType) {
-			// Handle error type as necessary
-			default:
-				break;
+		@Override
+		public void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails) {
+
 		}
-	}
+	};
 
-	@Override
-	protected void onDestroy() {
-		// VERY IMPORTANT! This must always be called or else you will leak resources
-		Spotify.destroyPlayer(this);
-		super.onDestroy();
-	}
 }
