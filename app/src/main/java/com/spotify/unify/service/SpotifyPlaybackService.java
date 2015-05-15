@@ -16,127 +16,127 @@ import com.spotify.sdk.android.player.Spotify;
 
 public class SpotifyPlaybackService extends Service implements PlayerNotificationCallback, ConnectionStateCallback {
 
-	private static final String TAG = "PlayerService";
+    private static final String TAG = "PlayerService";
 
-	private final IBinder mBinder = new LocalBinder();
-	private Player mPlayer;
-	private String mToken;
+    private final IBinder mBinder = new LocalBinder();
+    private Player mPlayer;
+    private String mToken;
 
-	public boolean hasToken() {
-		return !TextUtils.isEmpty(mToken);
-	}
+    public boolean hasToken() {
+        return !TextUtils.isEmpty(mToken);
+    }
 
-	public Player getPlayer() {
-		return mPlayer;
-	}
+    public Player getPlayer() {
+        return mPlayer;
+    }
 
-	public boolean hasPlayer() {
-		return mPlayer != null;
-	}
+    public boolean hasPlayer() {
+        return mPlayer != null;
+    }
 
-	public interface Listener {
-		void onPlayerInitialized(Player player);
-		void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState);
-		void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails);
-	}
+    public interface Listener {
+        void onPlayerInitialized(Player player);
+        void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState);
+        void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails);
+    }
 
-	private static final Listener NO_OP = new Listener() {
-		@Override
-		public void onPlayerInitialized(Player player) {
+    private static final Listener NO_OP = new Listener() {
+        @Override
+        public void onPlayerInitialized(Player player) {
 
-		}
+        }
 
-		@Override
-		public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
+        @Override
+        public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
 
-		}
+        }
 
-		@Override
-		public void onPlaybackError(ErrorType errorType, String errorDetails) {
+        @Override
+        public void onPlaybackError(ErrorType errorType, String errorDetails) {
 
-		}
-	};
+        }
+    };
 
-	private Listener mListener = NO_OP;
+    private Listener mListener = NO_OP;
 
-	public void setListener(Listener listener) {
-		mListener = listener;
-	}
+    public void setListener(Listener listener) {
+        mListener = listener;
+    }
 
-	public SpotifyPlaybackService() {
+    public SpotifyPlaybackService() {
 
-	}
+    }
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		startService(intent); // ಠ_ಠ
-		return mBinder;
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        startService(intent); // ಠ_ಠ
+        return mBinder;
+    }
 
-	public class LocalBinder extends Binder {
-		public SpotifyPlaybackService getService() {
-			return SpotifyPlaybackService.this;
-		}
-	}
+    public class LocalBinder extends Binder {
+        public SpotifyPlaybackService getService() {
+            return SpotifyPlaybackService.this;
+        }
+    }
 
-	public void initializeWithToken(String token) {
-		mToken = token;
-		Config playerConfig = new Config(this, token, Authenticator.CLIENT_ID);
-		mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
-			@Override
-			public void onInitialized(Player player) {
-				mPlayer.addConnectionStateCallback(SpotifyPlaybackService.this);
-				mPlayer.addPlayerNotificationCallback(SpotifyPlaybackService.this);
-				mListener.onPlayerInitialized(mPlayer);
-			}
+    public void initializeWithToken(String token) {
+        mToken = token;
+        Config playerConfig = new Config(this, token, Authenticator.CLIENT_ID);
+        mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+            @Override
+            public void onInitialized(Player player) {
+                mPlayer.addConnectionStateCallback(SpotifyPlaybackService.this);
+                mPlayer.addPlayerNotificationCallback(SpotifyPlaybackService.this);
+                mListener.onPlayerInitialized(mPlayer);
+            }
 
-			@Override
-			public void onError(Throwable throwable) {
-				Log.e(TAG, "Could not initialize player: " + throwable.getMessage());
-			}
-		});
-	}
+            @Override
+            public void onError(Throwable throwable) {
+                Log.e(TAG, "Could not initialize player: " + throwable.getMessage());
+            }
+        });
+    }
 
-	@Override
-	public void onLoggedIn() {
-		Log.d(TAG, "User logged in");
-	}
+    @Override
+    public void onLoggedIn() {
+        Log.d(TAG, "User logged in");
+    }
 
-	@Override
-	public void onLoggedOut() {
-		Log.d(TAG, "User logged out");
-	}
+    @Override
+    public void onLoggedOut() {
+        Log.d(TAG, "User logged out");
+    }
 
-	@Override
-	public void onLoginFailed(Throwable error) {
-		Log.d(TAG, "Login failed");
-	}
+    @Override
+    public void onLoginFailed(Throwable error) {
+        Log.d(TAG, "Login failed");
+    }
 
-	@Override
-	public void onTemporaryError() {
-		Log.d(TAG, "Temporary error occurred");
-	}
+    @Override
+    public void onTemporaryError() {
+        Log.d(TAG, "Temporary error occurred");
+    }
 
-	@Override
-	public void onConnectionMessage(String message) {
-		Log.d(TAG, "Received connection message: " + message);
-	}
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d(TAG, "Received connection message: " + message);
+    }
 
-	@Override
-	public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
-		Log.d(TAG, "Playback event received: " + eventType.name());
-		mListener.onPlaybackEvent(eventType, playerState);
-	}
+    @Override
+    public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
+        Log.d(TAG, "Playback event received: " + eventType.name());
+        mListener.onPlaybackEvent(eventType, playerState);
+    }
 
-	@Override
-	public void onPlaybackError(ErrorType errorType, String errorDetails) {
-		Log.d(TAG, "Playback error received: " + errorType.name());
-		mListener.onPlaybackError(errorType, errorDetails);
-	}
+    @Override
+    public void onPlaybackError(ErrorType errorType, String errorDetails) {
+        Log.d(TAG, "Playback error received: " + errorType.name());
+        mListener.onPlaybackError(errorType, errorDetails);
+    }
 
-	@Override
-	public void onDestroy() {
-		Spotify.destroyPlayer(this);
-		super.onDestroy();
-	}
+    @Override
+    public void onDestroy() {
+        Spotify.destroyPlayer(this);
+        super.onDestroy();
+    }
 }
