@@ -1,0 +1,33 @@
+TAGS
+
+.DS_Store
+.*.swp
+build/*
+build
+
+.gradle
+.idea
+*.ipr
+*.iws
+*.iml
+*.pyc
+local.properties
+.task_completion
+
+# Generated docs
+doc/*.html
+doc/**/*.html
+
+#TA screenshots
+screenshots/
+
+#QT project files?
+CMakeLists.txt.user*
+
+#Crashlytics-gen'd values
+com_crashlytics_export_strings.xml
+#and IDE properties
+crashlytics-build.properties
+
+/logs
+/libs/exoplayer
