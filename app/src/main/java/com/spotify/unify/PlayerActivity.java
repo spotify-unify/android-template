@@ -45,7 +45,7 @@ public class PlayerActivity extends ActionBarActivity {
     }
 
     private void setUpView() {
-        mName = (TextView) findViewById(R.id.hello);
+        //mName = (TextView) findViewById(R.id.hello);
         mCover = (ImageView) findViewById(R.id.cover);
     }
 
@@ -129,12 +129,6 @@ public class PlayerActivity extends ActionBarActivity {
             spotifyService.getMe(new Callback<User>() {
                 @Override
                 public void success(User user, Response response) {
-                    mName.setText(
-                            getResources().getString(
-                                    R.string.hello_x,
-                                    user.display_name
-                            )
-                    );
                 }
 
                 @Override
