@@ -42,4 +42,6 @@ dependencies {
 
     // Image loading cutie
     compile 'com.squareup.picasso:picasso:2.5.2'
+
+    compile 'com.android.support:palette-v7:21.0.0'
 }
