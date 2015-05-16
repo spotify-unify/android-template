@@ -1,8 +1,10 @@
 package com.spotify.unify;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.unify.models.DataExchangeModule;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
 import com.squareup.picasso.Picasso;
@@ -33,21 +36,16 @@ public class PlayerActivity extends ActionBarActivity {
 
     private SpotifyClient mSpotifyClient;
     private SpotifyService mSpotifyService;
-    private TextView mName;
     private ImageView mCover;
     private Player mPlayer;
+    private DataExchangeModule dataExchangeModule;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        setUpView();
-        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
-    }
-
-    private void setUpView() {
-        mName = (TextView) findViewById(R.id.hello);
         mCover = (ImageView) findViewById(R.id.cover);
+        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
     }
 
     @Override
@@ -82,7 +80,18 @@ public class PlayerActivity extends ActionBarActivity {
 
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
         @Override
-        public void onPlayerInitialized(Player player) {
+        public void onPlayerInitialized(final Player player) {
+            Log.d(TAG, "TRYING TO PLAY SONG");
+            new AsyncTask<String, Void, Void>() {
+                @Override
+                protected Void doInBackground(String... strings) {
+                    System.out.println(strings[0]);
+                    Track track = dataExchangeModule.getTrackByNFCID(strings[0]);
+                    player.play(track.uri);
+                    return null;
+                }
+            }.execute("1");
+
             mPlayer = player;
         }
 
@@ -126,6 +135,7 @@ public class PlayerActivity extends ActionBarActivity {
         @Override
         public void onClientReady(SpotifyApi spotifyApi) {
             mSpotifyService = spotifyApi.getService();
+            dataExchangeModule = new DataExchangeModule(spotifyApi);
             final SpotifyService spotifyService = spotifyApi.getService();
             spotifyService.getTrack("2V6yO7x7gQuaRoPesMZ5hr", new Callback<Track>() {
                 @Override
@@ -149,12 +159,7 @@ public class PlayerActivity extends ActionBarActivity {
             spotifyService.getMe(new Callback<User>() {
                 @Override
                 public void success(User user, Response response) {
-                    mName.setText(
-                            getResources().getString(
-                                    R.string.hello_x,
-                                    user.display_name
-                            )
-                    );
+
                 }
 
                 @Override
