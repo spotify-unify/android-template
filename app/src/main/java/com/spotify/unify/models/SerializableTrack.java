@@ -33,7 +33,7 @@ public class SerializableTrack implements Serializable {
 
     public SerializableTrack(Track track) {
         this.uri = track.uri;
-        this.imageUrl = track.album.uri;
+        this.imageUrl = track.album.images.get(0).url;
         this.title = track.name;
         this.artistName = track.artists.get(0).name;
     }
