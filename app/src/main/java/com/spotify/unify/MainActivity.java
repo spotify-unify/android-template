@@ -14,41 +14,93 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerNotificationCallback;
+import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.unify.models.DataExchangeModule;
+import com.spotify.unify.models.SerializableTrack;
 import com.spotify.unify.service.Authenticator;
 import com.spotify.unify.service.SpotifyClient;
+import com.spotify.unify.service.SpotifyPlaybackService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Track;
 
 
 public class MainActivity extends ActionBarActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String KEY_TRACK = "KEY_TRACK";
 
     private AuthenticationResponse authResponse;
 
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
-    private TextView mName;
-    private ImageView mCover;
     private NfcAdapter mNfcAdapter;
+    private SpotifyService mSpotifyService;
+    private DataExchangeModule mDataExchangeModule;
+    private final Queue<Runnable> mTasks = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Authenticator.authenticate(this);
-        //setUpView();
-        //mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
-
+        mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
+        mSpotifyClient.setActivity(this);
+        mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
+        mSpotifyClient.setClientListener(mClientListener);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         handleIntent(getIntent());
     }
+
+    private void executeTasks() {
+        if(mSpotifyService != null) {
+            while(!mTasks.isEmpty()) {
+                mTasks.poll().run();
+            }
+        }
+    }
+
+    private SpotifyClient.ClientListener mClientListener = new SpotifyClient.ClientListener() {
+        @Override
+        public void onClientReady(SpotifyApi spotifyApi) {
+            mSpotifyService = spotifyApi.getService();
+            mDataExchangeModule = new DataExchangeModule(spotifyApi);
+            executeTasks();
+        }
+
+        @Override
+        public void onAccessError() {
+
+        }
+    };
+
+    private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
+        @Override
+        public void onPlayerInitialized(final Player player) {
+        }
+
+        @Override
+        public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
+        }
+
+        @Override
+        public void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails) {
+
+        }
+    };
+
+
 
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
@@ -110,7 +162,32 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                mName.setText("Read content: " + result);
+                //mName.setText("Read content: " + result);
+                Log.d(TAG, "Read content");
+
+                //we read an nfc tag
+                mTasks.add(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        new AsyncTask<Void, Void, Track>() {
+                            @Override
+                            protected Track doInBackground(Void... voids) {
+                                Track track = mDataExchangeModule.getTrackByNFCID("1");
+                                return track;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Track track) {
+                                SerializableTrack seralizableTrack = new SerializableTrack(track);
+                                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                                i.putExtra(KEY_TRACK, seralizableTrack);
+                                startActivity(i);
+                            }
+                        }.execute();
+                    }
+                });
+                executeTasks();
             }
         }
     }
@@ -141,6 +218,14 @@ public class MainActivity extends ActionBarActivity {
 
         // Get the Text
         return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSpotifyClient.setClientListener(null);
+        mSpotifyClient.setActivity(null);
+        mSpotifyClient.setSpotifyPlaybackServiceListener(null);
     }
 
     /**
@@ -185,11 +270,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        this.authResponse = AuthenticationClient.getResponse(resultCode, intent);
-    }
-
-    public void startPlayer(View v) {
-        startActivity(new Intent(this, PlayerActivity.class));
+        mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
     }
 
 }

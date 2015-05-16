@@ -13,6 +13,18 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 
 public class SpotifyClient {
 
+    public void setActivity(Activity mActivity) {
+        this.mActivity = mActivity;
+    }
+
+    public void setSpotifyPlaybackServiceListener(SpotifyPlaybackService.Listener mListener) {
+        this.mListener = mListener;
+    }
+
+    public void setClientListener(ClientListener mClientListener) {
+        this.mClientListener = mClientListener;
+    }
+
     public interface ClientListener {
         void onClientReady(SpotifyApi spotifyApi);
         void onAccessError();
@@ -21,22 +33,12 @@ public class SpotifyClient {
     private static final String TAG = SpotifyClient.class.getSimpleName();
 
     private SpotifyPlaybackService mSpotifyPlaybackService;
-    private final Activity mActivity;
-    private final SpotifyPlaybackService.Listener mListener;
-    private final ClientListener mClientListener;
+    private Activity mActivity;
+    private SpotifyPlaybackService.Listener mListener;
+    private ClientListener mClientListener;
     private String mToken;
     private SpotifyApi mSpotifyApi;
 
-
-    public SpotifyClient(
-            @NonNull Activity activity,
-            @NonNull SpotifyPlaybackService.Listener listener,
-            @NonNull ClientListener clientListener
-    ) {
-        mActivity = activity;
-        mListener = listener;
-        mClientListener = clientListener;
-    }
 
     public void onActivityResult(int requestCode, int responseCode, Intent data) {
         mToken = Authenticator.getToken(requestCode, responseCode, data);
@@ -44,7 +46,8 @@ public class SpotifyClient {
             Log.e(TAG, "Failed to retrieve token");
             mClientListener.onAccessError();
         } else {
-            mSpotifyPlaybackService.initializeWithToken(mToken);
+            if (mSpotifyPlaybackService != null)
+                mSpotifyPlaybackService.initializeWithToken(mToken);
             mSpotifyApi = new SpotifyApi();
             mSpotifyApi.setAccessToken(mToken);
             mClientListener.onClientReady(mSpotifyApi);
