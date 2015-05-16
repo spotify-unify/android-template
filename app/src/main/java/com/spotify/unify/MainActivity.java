@@ -68,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
         @Override
         public void onPlayerInitialized(Player player) {
-            player.play("spotify:track:2V6yO7x7gQuaRoPesMZ5hr");
+            player.play("spotify:track:5lvHP8wTR2KEDY2pnp5zju");
         }
 
         @Override
