@@ -33,7 +33,7 @@ public class DataExchangeModule {
         playlists.put("1", new NFCPlaylist("1", "spotify_france","34yDEWwKE8oX1MbccPpuHq", "France"));
         playlists.put("2", new NFCPlaylist("2", "spotifyusa","042d5Yc8uMmAPJ5JhMLLIj", "USA"));
         playlists.put("3", new NFCPlaylist("3", "marilde","2BNUiaO5WyKjcSOGBcOxGC", "India"));
-        playlists.put("4", new NFCPlaylist("4", "marilde","3py66p7uksJut25yvqMrdv", "Brazil"));
+        playlists.put("4", new NFCPlaylist("4", "marilde","0T3jXqgQqlThEPST9j1njg", "Brazil"));
         playlists.put("5", new NFCPlaylist("5", "lunyadeli","0xoKD4FwJUipesIT0HwSno", "Spain"));
         playlists.put("6", new NFCPlaylist("6", "1299878201","2PhvlOCldoNhngelKuuSI6", "Italy"));
         playlists.put("7", new NFCPlaylist("7", "1237604494","5SgNct62VNMHlALs1c1vqh", "Japan"));
