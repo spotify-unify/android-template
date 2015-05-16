@@ -13,10 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.View;
 
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
@@ -41,14 +38,13 @@ public class MainActivity extends ActionBarActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String KEY_TRACK = "KEY_TRACK";
 
-    private AuthenticationResponse authResponse;
-
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
     private NfcAdapter mNfcAdapter;
     private SpotifyService mSpotifyService;
     private DataExchangeModule mDataExchangeModule;
     private final Queue<Runnable> mTasks = new LinkedList<>();
+    private static long mLastSpawn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,13 +100,14 @@ public class MainActivity extends ActionBarActivity {
 
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
+
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
             String type = intent.getType();
             if (MIME_TEXT_PLAIN.equals(type)) {
 
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                new NdefReaderTask().execute(tag);
+                spawnNfcTask(tag);
 
             } else {
                 Log.d(TAG, "Wrong mime type: " + type);
@@ -124,10 +121,17 @@ public class MainActivity extends ActionBarActivity {
 
             for (String tech : techList) {
                 if (searchedTech.equals(tech)) {
-                    new NdefReaderTask().execute(tag);
+                    spawnNfcTask(tag);
                     break;
                 }
             }
+        }
+    }
+
+    private void spawnNfcTask(Tag tag) {
+        if (System.currentTimeMillis() - mLastSpawn > 5000) {
+            new NdefReaderTask().execute(tag);
+            mLastSpawn = System.currentTimeMillis();
         }
     }
 
@@ -162,7 +166,6 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                //mName.setText("Read content: " + result);
                 Log.d(TAG, "Read content");
 
                 //we read an nfc tag
