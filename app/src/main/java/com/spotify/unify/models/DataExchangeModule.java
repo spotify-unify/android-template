@@ -27,4 +27,11 @@ public class DataExchangeModule {
     public Track getTrackByNFCID(String NFCID){
         return api.getService().getTrack(db.get(NFCID).getTrackURI());
     }
+
+    public String getLocationByNFCID(String NFCID)
+    {
+        return db.get(NFCID).getLocation();
+    }
+
+
 }
