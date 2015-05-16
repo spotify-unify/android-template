@@ -118,7 +118,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                mName.setText("Read content: " + result);
+                //mName.setText("Read content: " + result);
             }
         }
     }
@@ -188,8 +188,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void setUpView() {
-        mName = (TextView) findViewById(R.id.hello);
-        mCover = (ImageView) findViewById(R.id.cover);
+       // mName = (TextView) findViewById(R.id.hello);
+        //mCover = (ImageView) findViewById(R.id.cover);
     }
 
     @Override
