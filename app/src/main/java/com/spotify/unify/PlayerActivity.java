@@ -32,7 +32,8 @@ public class PlayerActivity extends ActionBarActivity {
     public static final String TAG = PlayerActivity.class.getSimpleName();
 
     private SpotifyClient mSpotifyClient;
-    private TextView  mName;
+    private SpotifyService mSpotifyService;
+    private TextView mName;
     private ImageView mCover;
     private Player mPlayer;
 
@@ -83,13 +84,32 @@ public class PlayerActivity extends ActionBarActivity {
         @Override
         public void onPlayerInitialized(Player player) {
             mPlayer = player;
-            player.play("spotify:track:5lvHP8wTR2KEDY2pnp5zju");
         }
 
         @Override
         public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
-            switch(eventType) {
+            switch (eventType) {
                 case PLAY:
+
+                    mSpotifyService.getTrack(playerState.trackUri, new Callback<Track>() {
+                        @Override
+                        public void success(Track track, Response response) {
+                            final List<Image> images = track.album.images;
+                            if (!images.isEmpty()) {
+                                Collections.shuffle(images);
+                                final Image randomImage = images.get(0);
+                                Picasso.with(getApplicationContext())
+                                        .load(randomImage.url)
+                                        .into(mCover);
+                            }
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+
                     break;
                 case PAUSE:
                     break;
@@ -105,8 +125,8 @@ public class PlayerActivity extends ActionBarActivity {
     private SpotifyClient.ClientListener mClientListener = mClientListener = new SpotifyClient.ClientListener() {
         @Override
         public void onClientReady(SpotifyApi spotifyApi) {
+            mSpotifyService = spotifyApi.getService();
             final SpotifyService spotifyService = spotifyApi.getService();
-
             spotifyService.getTrack("2V6yO7x7gQuaRoPesMZ5hr", new Callback<Track>() {
                 @Override
                 public void success(Track track, Response response) {
