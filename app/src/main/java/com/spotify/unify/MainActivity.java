@@ -3,6 +3,7 @@ package com.spotify.unify;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -65,6 +66,15 @@ public class MainActivity extends ActionBarActivity {
         mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
     }
 
+    public void next(View v) {
+    }
+
+    public void previous(View v) {
+
+    }
+
+
+
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
         @Override
         public void onPlayerInitialized(Player player) {
@@ -73,7 +83,12 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
-
+            switch(eventType) {
+                case PLAY:
+                    break;
+                case PAUSE:
+                    break;
+            }
         }
 
         @Override
