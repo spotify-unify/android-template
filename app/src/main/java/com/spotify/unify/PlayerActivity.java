@@ -6,6 +6,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,6 +19,7 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
+import com.spotify.unify.models.DataExchangeModule;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
 import com.squareup.picasso.Picasso;
@@ -40,6 +45,7 @@ public class PlayerActivity extends ActionBarActivity {
     private SpotifyClient mSpotifyClient;
     private TextView  mArtistText, mTrackText;
     private ImageButton mNextButton, mPrevButton, mPlayPauseButton;
+    private SpotifyService mSpotifyService;
     private ImageView mCover;
     private View mView;
     private Player mPlayer;
@@ -57,6 +63,7 @@ public class PlayerActivity extends ActionBarActivity {
 
         }
     };
+    private DataExchangeModule dataExchangeModule;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +83,8 @@ public class PlayerActivity extends ActionBarActivity {
         mNextButton = (ImageButton) findViewById(R.id.nextTrackButton);
         mPrevButton = (ImageButton) findViewById(R.id.prevTrackButton);
         mView = findViewById(R.id.background);
+        mCover = (ImageView) findViewById(R.id.cover);
+        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
     }
 
     @Override
@@ -110,17 +119,45 @@ public class PlayerActivity extends ActionBarActivity {
 
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
         @Override
-        public void onPlayerInitialized(Player player) {
-            mPlayer = player;
-            player.play("spotify:track:" + trackID);
-            mPlayPauseButton.setImageResource(R.drawable.pause);
-            mPlayer.setRepeat(true);
+        public void onPlayerInitialized(final Player player) {
+            Log.d(TAG, "TRYING TO PLAY SONG");
+            new AsyncTask<String, Void, Void>() {
+                @Override
+                protected Void doInBackground(String... strings) {
+                    System.out.println(strings[0]);
+                    Track track = dataExchangeModule.getTrackByNFCID(strings[0]);
+                    player.play(track.uri);
+                    mPlayPauseButton.setImageResource(R.drawable.pause);
+                    player.setRepeat(true);
+                    return null;
+                }
+            }.execute("1");
         }
 
         @Override
         public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
-            switch(eventType) {
+            switch (eventType) {
                 case PLAY:
+
+                    mSpotifyService.getTrack(playerState.trackUri, new Callback<Track>() {
+                        @Override
+                        public void success(Track track, Response response) {
+                            final List<Image> images = track.album.images;
+                            if (!images.isEmpty()) {
+                                Collections.shuffle(images);
+                                final Image randomImage = images.get(0);
+                                Picasso.with(getApplicationContext())
+                                        .load(randomImage.url)
+                                        .into(mCover);
+                            }
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+
                     break;
                 case PAUSE:
                     break;
@@ -159,6 +196,8 @@ public class PlayerActivity extends ActionBarActivity {
     private SpotifyClient.ClientListener mClientListener = mClientListener = new SpotifyClient.ClientListener() {
         @Override
         public void onClientReady(SpotifyApi spotifyApi) {
+            mSpotifyService = spotifyApi.getService();
+            dataExchangeModule = new DataExchangeModule(spotifyApi);
             final SpotifyService spotifyService = spotifyApi.getService();
 
             spotifyService.getTrack(trackID, new Callback<Track>() {
