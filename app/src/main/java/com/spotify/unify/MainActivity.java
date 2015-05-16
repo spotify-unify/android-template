@@ -13,18 +13,21 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
+import com.spotify.unify.service.Authenticator;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
 import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,13 +41,14 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-
 public class MainActivity extends ActionBarActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+
+    private AuthenticationResponse authResponse;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
-    private TextView  mName;
+    private TextView mName;
     private ImageView mCover;
     private NfcAdapter mNfcAdapter;
 
@@ -52,6 +56,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Authenticator.authenticate(this);
         setUpView();
         mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
 
@@ -87,6 +92,7 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
+
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
 
         @Override
@@ -122,6 +128,7 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
+
     private String readText(NdefRecord record) throws UnsupportedEncodingException {
         /*
          * See NFC forum specification for "Text Record Type Definition" at 3.2.1
@@ -138,7 +145,7 @@ public class MainActivity extends ActionBarActivity {
         String utf8 = "UTF-8";
         String utf16 = "UTF-16";
         // Get the Text Encoding
-        String textEncoding = ((payload[0] & 128) == 0) ? utf8: utf16;
+        String textEncoding = ((payload[0] & 128) == 0) ? utf8 : utf16;
 
         // Get the Language Code
         int languageCodeLength = payload[0] & 0063;
@@ -149,9 +156,10 @@ public class MainActivity extends ActionBarActivity {
         // Get the Text
         return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
     }
+
     /**
      * @param activity The corresponding {@link Activity} requesting the foreground dispatch.
-     * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
+     * @param adapter  The {@link NfcAdapter} used for the foreground dispatch.
      */
     public static void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
@@ -188,8 +196,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void setUpView() {
-        mName = (TextView) findViewById(R.id.hello);
-        mCover = (ImageView) findViewById(R.id.cover);
+        //mName = (TextView) findViewById(R.id.hello);
+        //mCover = (ImageView) findViewById(R.id.cover);
     }
 
     @Override
@@ -205,7 +213,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         mSpotifyClient.disconnect();
         super.onDestroy();
     }
@@ -213,7 +221,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
+        this.authResponse = AuthenticationClient.getResponse(resultCode, intent);
+    }
+
+    public void startPlayer(View v) {
+        startActivity(new Intent(this, PlayerActivity.class));
     }
 
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
@@ -277,7 +289,6 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onAccessError() {
-
         }
     };
 }

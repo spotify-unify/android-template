@@ -20,11 +20,16 @@ public class DataExchangeModule {
         db = new HashMap<String,NFCTrack>();
         db.put("1",new NFCTrack("1","spotify:track:2V6yO7x7gQuaRoPesMZ5hr","Location 1"));
         db.put("2",new NFCTrack("2","spotify:track:6OkSbOk5ajxGAEtFM751C4","Location 2"));
-
-        //TODO: add a bunch of tracks
     }
 
     public Track getTrackByNFCID(String NFCID){
         return api.getService().getTrack(db.get(NFCID).getTrackURI());
     }
+
+    public String getLocationByNFCID(String NFCID)
+    {
+        return db.get(NFCID).getLocation();
+    }
+
+
 }
