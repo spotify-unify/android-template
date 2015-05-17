@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,15 +21,12 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
-import com.spotify.unify.models.DataExchangeModule;
-import com.spotify.unify.models.SerializableTrack;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
-import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -43,7 +43,6 @@ public class PlayerActivity extends ActionBarActivity {
     private ImageButton mNextButton;
     private ImageButton mPrevButton;
     private ImageButton mPlayPauseButton;
-    private SpotifyService mSpotifyService;
     private ImageView mCover;
     private View mView;
     private Player mPlayer;
@@ -84,8 +83,6 @@ public class PlayerActivity extends ActionBarActivity {
         });
     }
 
-    private DataExchangeModule mDataExchangeModule;
-    private SerializableTrack mTrack;
     private String mPlaylistUri;
     private SpotifyApi mSpotifyApi;
     private String mPlaylistTitle;
@@ -132,7 +129,7 @@ public class PlayerActivity extends ActionBarActivity {
         mView = findViewById(R.id.background);
         mCover = (ImageView) findViewById(R.id.cover);
 
-        Typeface typeFace= Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
+        Typeface typeFace = Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
         mArtistText.setTypeface(typeFace);
         mTrackText.setTypeface(typeFace);
     }
@@ -141,7 +138,7 @@ public class PlayerActivity extends ActionBarActivity {
         @Override
         public void onPlayerInitialized(final Player player) {
             mPlayer = player;
-            player.play(mPlaylistUri); //mTrack.getUri());
+            player.play(mPlaylistUri);
             mPlayPauseButton.setImageResource(R.drawable.pause);
             player.setRepeat(true);
         }
@@ -194,14 +191,54 @@ public class PlayerActivity extends ActionBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mCover.setImageDrawable(null);
     }
 
     // This is for getting background color from the album cover
     private Target mCoverTarget = new Target() {
 
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+        public boolean shouldFadeOut = true;
+
+        private void fadeIn(Bitmap bitmap) {
+            AlphaAnimation anim = new AlphaAnimation(0.5f, 1.0f);
+            anim.setDuration(300);
+            mCover.startAnimation(anim);
             mCover.setImageBitmap(bitmap);
+        }
+
+        @Override
+        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+
+            Drawable currentDrawable = mCover.getDrawable();
+            if (currentDrawable != null) {
+                shouldFadeOut = true;
+                Bitmap currentBitmap = ((BitmapDrawable) currentDrawable).getBitmap();
+                if (bitmap.equals(currentBitmap))
+                    return;
+            } else
+                shouldFadeOut = false;
+
+
+            AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.5f);
+            fadeOut.setDuration(300);
+            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    fadeIn(bitmap);
+                }
+            });
+            if (shouldFadeOut)
+                mCover.startAnimation(fadeOut);
+            else
+                fadeIn(bitmap);
 
             Palette palette = Palette.generate(bitmap);
             Palette.Swatch swatch = null;
@@ -220,6 +257,7 @@ public class PlayerActivity extends ActionBarActivity {
                 mTrackText.setTextColor(Color.parseColor("#eee"));
                 mArtistText.setTextColor(Color.parseColor("#ccc"));
             }
+
 
         }
 

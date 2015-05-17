@@ -14,6 +14,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.spotify.sdk.android.player.Player;
@@ -26,11 +28,8 @@ import com.spotify.unify.service.SpotifyPlaybackService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
-import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Playlist;
 
 
@@ -45,9 +44,7 @@ public class MainActivity extends ActionBarActivity {
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
     private NfcAdapter mNfcAdapter;
-    private SpotifyService mSpotifyService;
     private DataExchangeModule mDataExchangeModule;
-    private final Queue<Runnable> mTasks = new LinkedList<>();
     private static long mLastSpawn;
 
     @Override
@@ -64,27 +61,18 @@ public class MainActivity extends ActionBarActivity {
     private void setUpView() {
         TextView textView = (TextView) findViewById(R.id.textView);
         TextView headView = (TextView) findViewById(R.id.head_view);
-        Typeface typeFace= Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
+        Typeface typeFace = Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
         textView.setTypeface(typeFace);
         headView.setTypeface(typeFace);
     }
 
-    private void executeTasks() {
-        /*if(mSpotifyService != null) {
-            while(!mTasks.isEmpty()) {
-                mTasks.poll().run();
-            }
-        }*/
-    }
 
     private boolean mDataExchangeModuleInitialized = false;
     private SpotifyClient.ClientListener mClientListener = new SpotifyClient.ClientListener() {
         @Override
         public void onClientReady(SpotifyApi spotifyApi) {
-            mSpotifyService = spotifyApi.getService();
             mDataExchangeModule = new DataExchangeModule(spotifyApi);
             mDataExchangeModuleInitialized = true;
-            executeTasks();
         }
 
         @Override
@@ -187,7 +175,7 @@ public class MainActivity extends ActionBarActivity {
             new AsyncTask<Void, Void, PlaylistHolder>() {
                 @Override
                 protected PlaylistHolder doInBackground(Void... voids) {
-                    if(!mDataExchangeModuleInitialized)
+                    if (!mDataExchangeModuleInitialized)
                         return null;
 
                     Log.d(TAG, "Getting track. result: " + result);
@@ -201,7 +189,7 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 protected void onPostExecute(PlaylistHolder holder) {
-                    if(holder == null)
+                    if (holder == null)
                         return;
                     Log.e("YELL", "FINISHING PLAYER ACTIVITY");
                     finishActivity(PLAYER_ACTIVITY_REQUEST_CODE);
@@ -213,10 +201,6 @@ public class MainActivity extends ActionBarActivity {
 
                 }
             }.execute();
-
-
-            executeTasks();
-
         }
     }
 
