@@ -2,6 +2,7 @@ package com.spotify.unify;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -199,10 +200,23 @@ public class PlayerActivity extends ActionBarActivity {
             mCover.setImageBitmap(bitmap);
 
             Palette palette = Palette.generate(bitmap);
-            Palette.Swatch swatch = palette.getVibrantSwatch();
-            mView.setBackgroundColor(swatch.getRgb());
-            mTrackText.setTextColor(swatch.getTitleTextColor());
-            mArtistText.setTextColor(swatch.getBodyTextColor());
+            Palette.Swatch swatch = null;
+            if (palette.getVibrantSwatch() != null) {
+                swatch = palette.getVibrantSwatch();
+            } else if (palette.getMutedSwatch() != null) {
+                swatch = palette.getMutedSwatch();
+            }
+
+            if (swatch != null) {
+                mView.setBackgroundColor(swatch.getRgb());
+                mTrackText.setTextColor(swatch.getTitleTextColor());
+                mArtistText.setTextColor(swatch.getBodyTextColor());
+            } else {
+                mView.setBackgroundColor(Color.parseColor("#333"));
+                mTrackText.setTextColor(Color.parseColor("#eee"));
+                mArtistText.setTextColor(Color.parseColor("#ccc"));
+            }
+
         }
 
         @Override
