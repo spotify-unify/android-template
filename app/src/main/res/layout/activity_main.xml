@@ -3,38 +3,9 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 tools:context=".MainActivity"
-                android:background="@drawable/gradient"
-                android:orientation="vertical">
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:textAlignment="center"
-        android:text="The earth has music for those who listen"
-        android:id="@+id/head_view"
-        android:background="#ab646464"
-        android:textColor="#ffffffff"
-        android:textSize="20dp"
-        android:gravity="center_vertical|center_horizontal" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:textAlignment="center"
-        android:text="Scan the NFC-tag"
-        android:id="@+id/textView"
-        android:background="#ab646464"
-        android:textColor="#ffffffff"
-        android:textSize="20dp"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_horizontal|bottom" />
+                android:orientation="vertical"
+                android:background="@drawable/main_background"
+    >
 
 
     <ImageView
@@ -54,5 +25,38 @@
         android:layout_height="232dp"
         android:layout_gravity="center" />
 
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="64dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:textAlignment="center"
+        android:text="Scan to play"
+        android:id="@+id/textView"
+        android:background="#77cccccc"
+        android:textColor="#ffffffff"
+        android:textSize="20dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_gravity="right|bottom" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:textAlignment="center"
+        android:text="The earth has music for those who listen"
+        android:id="@+id/head_view"
+        android:background="#77cccccc"
+        android:textColor="#ffffffff"
+        android:textSize="20dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_gravity="right|top" /><![CDATA[
+
+    ;
+        android:id="@+id/imageView"
+        android:layout_gravity="center" />
+
+
+]]>
 </FrameLayout>
