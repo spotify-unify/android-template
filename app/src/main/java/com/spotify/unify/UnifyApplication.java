@@ -9,13 +9,5 @@ import com.spotify.unify.service.SpotifyClient;
  */
 public class UnifyApplication extends Application {
 
-    private SpotifyClient mSpotifyClient;
-
-    public SpotifyClient getSpotifyClient() {
-        if(mSpotifyClient == null)
-            mSpotifyClient = new SpotifyClient();
-        return mSpotifyClient;
-    }
-
 
 }
