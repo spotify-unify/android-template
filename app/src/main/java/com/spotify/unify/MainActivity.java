@@ -66,11 +66,13 @@ public class MainActivity extends ActionBarActivity {
         }*/
     }
 
+    private boolean mDataExchangeModuleInitialized = false;
     private SpotifyClient.ClientListener mClientListener = new SpotifyClient.ClientListener() {
         @Override
         public void onClientReady(SpotifyApi spotifyApi) {
             mSpotifyService = spotifyApi.getService();
             mDataExchangeModule = new DataExchangeModule(spotifyApi);
+            mDataExchangeModuleInitialized = true;
             executeTasks();
         }
 
@@ -174,16 +176,22 @@ public class MainActivity extends ActionBarActivity {
             new AsyncTask<Void, Void, PlaylistHolder>() {
                 @Override
                 protected PlaylistHolder doInBackground(Void... voids) {
+                    if(!mDataExchangeModuleInitialized)
+                        return null;
+
                     Log.d(TAG, "Getting track. result: " + result);
                     Playlist playlist = mDataExchangeModule.getPlaylistByNFCID(result);
                     PlaylistHolder holder = new PlaylistHolder();
                     holder.name = playlist.name;
                     holder.uri = playlist.uri;
+
                     return holder;
                 }
 
                 @Override
                 protected void onPostExecute(PlaylistHolder holder) {
+                    if(holder == null)
+                        return;
                     Log.e("YELL", "FINISHING PLAYER ACTIVITY");
                     finishActivity(PLAYER_ACTIVITY_REQUEST_CODE);
                     Intent i = new Intent(MainActivity.this, PlayerActivity.class);
