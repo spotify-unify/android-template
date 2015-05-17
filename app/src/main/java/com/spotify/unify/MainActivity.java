@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -13,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
@@ -52,10 +54,19 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setUpView();
         Authenticator.authenticate(this);
         mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         handleIntent(getIntent());
+    }
+
+    private void setUpView() {
+        TextView textView = (TextView) findViewById(R.id.textView);
+        TextView headView = (TextView) findViewById(R.id.head_view);
+        Typeface typeFace= Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
+        textView.setTypeface(typeFace);
+        headView.setTypeface(typeFace);
     }
 
     private void executeTasks() {

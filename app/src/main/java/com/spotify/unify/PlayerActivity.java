@@ -3,6 +3,7 @@ package com.spotify.unify;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -130,6 +131,10 @@ public class PlayerActivity extends ActionBarActivity {
         mPrevButton = (ImageButton) findViewById(R.id.prevTrackButton);
         mView = findViewById(R.id.background);
         mCover = (ImageView) findViewById(R.id.cover);
+
+        Typeface typeFace= Typeface.createFromAsset(getAssets(), "JosefinSans-SemiBold.ttf");
+        mArtistText.setTypeface(typeFace);
+        mTrackText.setTypeface(typeFace);
     }
 
     private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
