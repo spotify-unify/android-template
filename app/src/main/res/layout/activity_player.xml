@@ -36,7 +36,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:background="#77cccccc">
+        android:background="#66ffffff">
 
         <ImageButton
             android:id="@+id/prevTrackButton"
