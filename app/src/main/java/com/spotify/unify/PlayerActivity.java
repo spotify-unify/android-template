@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
@@ -25,14 +24,9 @@ import com.spotify.unify.service.SpotifyPlaybackService;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.util.Collections;
-import java.util.List;
-
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.User;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -92,13 +86,17 @@ public class PlayerActivity extends ActionBarActivity {
     private SerializableTrack mTrack;
     private String mPlaylistUri;
     private SpotifyApi mSpotifyApi;
+    private String mPlaylistTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         setUpView();
-        mPlaylistUri = getIntent().getStringExtra(MainActivity.KEY_TRACK);
+        mPlaylistUri = getIntent().getStringExtra(MainActivity.KEY_PLAYLIST_URI);
+        mPlaylistTitle = getIntent().getStringExtra(MainActivity.KEY_PLAYLIST_NAME);
+        setTitle(getString(R.string.app_name) + " - " + mPlaylistTitle);
+
         mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
         mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
         mSpotifyClient.setClientListener(new SpotifyClient.ClientListener() {
@@ -115,7 +113,7 @@ public class PlayerActivity extends ActionBarActivity {
         mSpotifyClient.setActivity(this);
 
 
-       /* mTrack = (SerializableTrack) getIntent().getSerializableExtra(MainActivity.KEY_TRACK); */
+       /* mTrack = (SerializableTrack) getIntent().getSerializableExtra(MainActivity.KEY_PLAYLIST_URI); */
         //setTrackViewInfo(title, artistname, imageUrl);
     }
 
