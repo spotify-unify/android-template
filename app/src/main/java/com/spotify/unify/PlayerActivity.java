@@ -2,6 +2,7 @@ package com.spotify.unify;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,8 +43,8 @@ public class PlayerActivity extends ActionBarActivity {
     public static final String TAG = PlayerActivity.class.getSimpleName();
 
     private SpotifyClient mSpotifyClient;
-    private TextView  mArtistText;
-    private TextView  mTrackText;
+    private TextView mArtistText;
+    private TextView mTrackText;
     private ImageButton mNextButton;
     private ImageButton mPrevButton;
     private ImageButton mPlayPauseButton;
@@ -54,6 +55,7 @@ public class PlayerActivity extends ActionBarActivity {
     private PlayerStateCallback mPlayerStateCallback = new PlayerStateCallback() {
         @Override
         public void onPlayerState(PlayerState playerState) {
+
             if (playerState.playing) {
                 mPlayer.pause();
                 mPlayPauseButton.setImageResource(R.drawable.play);
@@ -62,22 +64,47 @@ public class PlayerActivity extends ActionBarActivity {
                 mPlayPauseButton.setImageResource(R.drawable.pause);
             }
 
+            readPlayerTrack(playerState);
         }
     };
-    private DataExchangeModule dataExchangeModule;
+
+    private void readPlayerTrack(PlayerState playerState) {
+        if (!playerState.trackUri.startsWith("spotify:track:")) {
+            Log.d(TAG, "Invalid track uri: " + playerState.trackUri);
+            return;
+        }
+
+        String trackUri = playerState.trackUri.substring("spotify:track:".length());
+        mSpotifyApi.getService().getTrack(trackUri, new Callback<Track>() {
+            @Override
+            public void success(Track track, Response response) {
+                setTrackViewInfo(track.name, track.artists.get(0).name, track.album.images.get(0).url);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+    }
+
+    private DataExchangeModule mDataExchangeModule;
     private SerializableTrack mTrack;
+    private String mPlaylistUri;
+    private SpotifyApi mSpotifyApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         setUpView();
+        mPlaylistUri = getIntent().getStringExtra(MainActivity.KEY_TRACK);
         mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
         mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
         mSpotifyClient.setClientListener(new SpotifyClient.ClientListener() {
             @Override
             public void onClientReady(SpotifyApi spotifyApi) {
-
+                mSpotifyApi = spotifyApi;
             }
 
             @Override
@@ -86,11 +113,18 @@ public class PlayerActivity extends ActionBarActivity {
             }
         });
         mSpotifyClient.setActivity(this);
-        mTrack = (SerializableTrack) getIntent().getSerializableExtra(MainActivity.KEY_TRACK);
-        mTrackText.setText(mTrack.getTitle());
-        mArtistText.setText(mTrack.getArtistName());
+
+
+       /* mTrack = (SerializableTrack) getIntent().getSerializableExtra(MainActivity.KEY_TRACK); */
+        //setTrackViewInfo(title, artistname, imageUrl);
+    }
+
+    private void setTrackViewInfo(String title, String artistName, String imageUrl) {
+        mTrackText.setText(title);
+        mArtistText.setText(artistName);
+
         Picasso.with(getApplicationContext())
-                .load(mTrack.getImageUrl())
+                .load(imageUrl)
                 .into(mCoverTarget);
     }
 
@@ -109,14 +143,14 @@ public class PlayerActivity extends ActionBarActivity {
         @Override
         public void onPlayerInitialized(final Player player) {
             mPlayer = player;
-            player.play(mTrack.getUri());
+            player.play(mPlaylistUri); //mTrack.getUri());
             mPlayPauseButton.setImageResource(R.drawable.pause);
             player.setRepeat(true);
         }
 
         @Override
         public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
-
+            readPlayerTrack(playerState);
         }
 
         @Override
@@ -146,16 +180,18 @@ public class PlayerActivity extends ActionBarActivity {
 
     public void next(View v) {
         mPlayer.skipToNext();
+        mPlayPauseButton.setImageResource(R.drawable.pause);
     }
 
     public void previous(View v) {
         mPlayer.skipToPrevious();
+        mPlayPauseButton.setImageResource(R.drawable.pause);
     }
 
     public void pause(View v) {
         mPlayer.getPlayerState(mPlayerStateCallback);
     }
-    
+
     // This is for getting background color from the album cover
     private Target mCoverTarget = new Target() {
 
@@ -164,10 +200,23 @@ public class PlayerActivity extends ActionBarActivity {
             mCover.setImageBitmap(bitmap);
 
             Palette palette = Palette.generate(bitmap);
-            Palette.Swatch swatch = palette.getVibrantSwatch();
-            mView.setBackgroundColor(swatch.getRgb());
-            mTrackText.setTextColor(swatch.getTitleTextColor());
-            mArtistText.setTextColor(swatch.getBodyTextColor());
+            Palette.Swatch swatch = null;
+            if (palette.getVibrantSwatch() != null) {
+                swatch = palette.getVibrantSwatch();
+            } else if (palette.getMutedSwatch() != null) {
+                swatch = palette.getMutedSwatch();
+            }
+
+            if (swatch != null) {
+                mView.setBackgroundColor(swatch.getRgb());
+                mTrackText.setTextColor(swatch.getTitleTextColor());
+                mArtistText.setTextColor(swatch.getBodyTextColor());
+            } else {
+                mView.setBackgroundColor(Color.parseColor("#333"));
+                mTrackText.setTextColor(Color.parseColor("#eee"));
+                mArtistText.setTextColor(Color.parseColor("#ccc"));
+            }
+
         }
 
         @Override
