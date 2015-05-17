@@ -30,9 +30,10 @@
         android:layout_centerHorizontal="true"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
+        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
@@ -41,35 +42,38 @@
         <ImageButton
             android:id="@+id/prevTrackButton"
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="64dp"
             android:layout_gravity="left|center_vertical"
-            android:background="@null"
+            android:background="@drawable/buttonbackground"
             android:onClick="previous"
             android:src="@drawable/prev"/>
 
         <ImageButton
             android:id="@+id/playPauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="64dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center"
-            android:background="@null"
+            android:background="@drawable/buttonbackground"
             android:onClick="pause"
             android:src="@drawable/play"/>
 
         <ImageButton
             android:id="@+id/nextTrackButton"
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="64dp"
             android:layout_alignParentEnd="true"
             android:layout_alignTop="@+id/playPauseButton"
             android:layout_gravity="right|center_vertical"
-            android:background="@null"
+            android:background="@drawable/buttonbackground"
             android:onClick="next"
             android:src="@drawable/next"/>
-    </FrameLayout>
+    </LinearLayout>
 
 </RelativeLayout>

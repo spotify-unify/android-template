@@ -43,6 +43,7 @@ public class DataExchangeModule {
         playlists.put("russia", new NFCPlaylist("russia", "axel.stevensmalmberg","2fb6OMtd2gmzo7enkIsXGW", "Russia"));
         playlists.put("mali", new NFCPlaylist("mali","jaghetermoa","55MLLF5gQ75mCYYsdwKxEg","mali"));
         playlists.put("australia", new NFCPlaylist("australia","marilde","4sgZor289Mk5SFGpnwHn8y","australia"));
+        playlists.put("chile", new NFCPlaylist("chile","jaghetermoa","52ro1bUx2uEJmD8nWi41oH","chile"));
 
     }
 
@@ -61,6 +62,7 @@ public class DataExchangeModule {
         tracks.put("russia", new NFCTrack("russia", "596WZD5V9np8nRtuMClJXi", "Russia"));
         tracks.put("mali",new NFCTrack("mali","4jKe4NnyGnDKb59svENink","mali"));
         tracks.put("australia",new NFCTrack("australia","1gV9z71GcNfGwG5L7xY2Wy","australia"));
+        tracks.put("chile",new NFCTrack("chile","3acjs3wXezi9MzHr8LkIQj","chile"));
 
     }
 
