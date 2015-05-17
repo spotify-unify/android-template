@@ -1,12 +1,58 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                tools:context=".MainActivity"
+                android:background="@drawable/gradient"
+                android:orientation="vertical">
+
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SCAN AN NFC" />
+        android:layout_marginTop="40dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:textAlignment="center"
+        android:text="The earth has music for those who listen"
+        android:id="@+id/head_view"
+        android:background="#ab646464"
+        android:textColor="#ffffffff"
+        android:textSize="20dp"
+        android:gravity="center_vertical|center_horizontal" />
 
-</LinearLayout>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:textAlignment="center"
+        android:text="Scan the NFC-tag"
+        android:id="@+id/textView"
+        android:background="#ab646464"
+        android:textColor="#ffffffff"
+        android:textSize="20dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_gravity="center_horizontal|bottom" />
+
+
+    <ImageView
+
+        android:adjustViewBounds="true"
+        android:background="@drawable/circle"
+
+        android:layout_width="294dp"
+        android:layout_height="294dp"
+
+        android:layout_gravity="center" />
+    <ImageView
+        android:adjustViewBounds="true"
+        android:background="@drawable/circle"
+
+        android:layout_width="232dp"
+        android:layout_height="232dp"
+        android:layout_gravity="center" />
+
+
+</FrameLayout>
