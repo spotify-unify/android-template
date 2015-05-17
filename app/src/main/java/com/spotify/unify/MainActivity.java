@@ -18,7 +18,6 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.unify.models.DataExchangeModule;
-import com.spotify.unify.models.SerializableTrack;
 import com.spotify.unify.service.Authenticator;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
@@ -30,13 +29,14 @@ import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Playlist;
 
 
 public class MainActivity extends ActionBarActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
-    public static final String KEY_TRACK = "KEY_TRACK";
+    public static final String KEY_PLAYLIST_URI = "KEY_PLAYLIST_URI";
+    public static final String KEY_PLAYLIST_NAME = "KEY_PLAYLIST_NAME";
 
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
@@ -164,7 +164,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(final String result) {
             if (result != null) {
                 Log.d(TAG, "Read content");
 
@@ -173,18 +173,24 @@ public class MainActivity extends ActionBarActivity {
 
                     @Override
                     public void run() {
-                        new AsyncTask<Void, Void, Track>() {
+                        new AsyncTask<Void, Void, PlaylistHolder>() {
                             @Override
-                            protected Track doInBackground(Void... voids) {
-                                Track track = mDataExchangeModule.getTrackByNFCID("1");
-                                return track;
+                            protected PlaylistHolder doInBackground(Void... voids) {
+                                Log.d(TAG, "Getting track. result: " + result);
+                                Playlist playlist = mDataExchangeModule.getPlaylistByNFCID(result);
+                                PlaylistHolder holder = new PlaylistHolder();
+                                holder.name = playlist.name;
+                                holder.uri = playlist.uri;
+                                return holder;
                             }
 
                             @Override
-                            protected void onPostExecute(Track track) {
-                                SerializableTrack seralizableTrack = new SerializableTrack(track);
+                            protected void onPostExecute(PlaylistHolder holder) {
+                                //SerializableTrack seralizableTrack = new SerializableTrack(playlist);
+                                //SerializablePlaylist serializablePlaylist = new SerializablePlaylist(playlist);
                                 Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                                i.putExtra(KEY_TRACK, seralizableTrack);
+                                i.putExtra(KEY_PLAYLIST_URI, holder.uri);
+                                i.putExtra(KEY_PLAYLIST_NAME, holder.name);
                                 startActivity(i);
                             }
                         }.execute();
@@ -193,6 +199,11 @@ public class MainActivity extends ActionBarActivity {
                 executeTasks();
             }
         }
+    }
+
+    private static class PlaylistHolder {
+        public String name;
+        public String uri;
     }
 
     private String readText(NdefRecord record) throws UnsupportedEncodingException {
