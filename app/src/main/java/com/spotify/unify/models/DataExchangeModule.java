@@ -30,33 +30,33 @@ public class DataExchangeModule {
 
     private void buildPlaylistDatabase() {
         playlists = new HashMap<String,NFCPlaylist>();
-        playlists.put("1", new NFCPlaylist("1", "spotify_france","34yDEWwKE8oX1MbccPpuHq", "France"));
-        playlists.put("2", new NFCPlaylist("2", "spotifyusa","042d5Yc8uMmAPJ5JhMLLIj", "USA"));
-        playlists.put("3", new NFCPlaylist("3", "marilde","2BNUiaO5WyKjcSOGBcOxGC", "India"));
-        playlists.put("4", new NFCPlaylist("4", "marilde","0T3jXqgQqlThEPST9j1njg", "Brazil"));
-        playlists.put("5", new NFCPlaylist("5", "lunyadeli","0xoKD4FwJUipesIT0HwSno", "Spain"));
-        playlists.put("6", new NFCPlaylist("6", "1299878201","2PhvlOCldoNhngelKuuSI6", "Italy"));
-        playlists.put("7", new NFCPlaylist("7", "1237604494","5SgNct62VNMHlALs1c1vqh", "Japan"));
-        playlists.put("8", new NFCPlaylist("8", "nightwishband","4wBDB1Bhd9CeI0F5D6aVRZ", "Finland"));
-        playlists.put("9", new NFCPlaylist("9", "spotify","7MaHaNasfz3GySo2sQexI7", "Mexico"));
-        playlists.put("10", new NFCPlaylist("10", "bassbanana","6Ixvm0VqC89ncw6xPwTW5Y", "Sweden"));
-        playlists.put("11", new NFCPlaylist("11", "axel.stevensmalmberg","2fb6OMtd2gmzo7enkIsXGW", "Russia"));
+        playlists.put("france", new NFCPlaylist("france", "spotify_france","34yDEWwKE8oX1MbccPpuHq", "France"));
+        playlists.put("usa", new NFCPlaylist("usa", "spotifyusa","042d5Yc8uMmAPJ5JhMLLIj", "USA"));
+        playlists.put("india", new NFCPlaylist("india", "marilde","2BNUiaO5WyKjcSOGBcOxGC", "India"));
+        playlists.put("brazil", new NFCPlaylist("brazil", "marilde","0T3jXqgQqlThEPST9j1njg", "Brazil"));
+        playlists.put("spain", new NFCPlaylist("spain", "lunyadeli","0xoKD4FwJUipesIT0HwSno", "Spain"));
+        playlists.put("italy", new NFCPlaylist("italy", "1299878201","2PhvlOCldoNhngelKuuSI6", "Italy"));
+        playlists.put("japan", new NFCPlaylist("japan", "1237604494","5SgNct62VNMHlALs1c1vqh", "Japan"));
+        playlists.put("finland", new NFCPlaylist("finland", "nightwishband","4wBDB1Bhd9CeI0F5D6aVRZ", "Finland"));
+        playlists.put("mexico", new NFCPlaylist("mexico", "spotify","7MaHaNasfz3GySo2sQexI7", "Mexico"));
+        playlists.put("sweden", new NFCPlaylist("sweden", "bassbanana","6Ixvm0VqC89ncw6xPwTW5Y", "Sweden"));
+        playlists.put("russia", new NFCPlaylist("russia", "axel.stevensmalmberg","2fb6OMtd2gmzo7enkIsXGW", "Russia"));
 
     }
 
     private void buildTrackDatabase(){
         tracks = new HashMap<String,NFCTrack>();
-        tracks.put("1", new NFCTrack("1", "0DiWol3AO6WpXZgp0goxAV", "France"));
-        tracks.put("2", new NFCTrack("2", "6OkSbOk5ajxGAEtFM751C4", "USA"));
-        tracks.put("3", new NFCTrack("3", "0vUjDXHs7XwUnL42ntZaTS", "India"));
-        tracks.put("4", new NFCTrack("4", "1rundCBCrbT8CNdBRrETGd", "Brazil"));
-        tracks.put("5", new NFCTrack("5", "78dMkFd4FarAJYj7NUcutI", "Spain"));
-        tracks.put("6", new NFCTrack("6", "7AgXyagsth2Rk5KQNYmQNz", "Italy"));
-        tracks.put("7", new NFCTrack("7", "5oGk9tbzYDy5jheoCwVYNI", "Japan"));
-        tracks.put("8", new NFCTrack("8", "1FSheI0xU7AjrRNGIsTJrB", "Finland"));
-        tracks.put("9", new NFCTrack("9", "0i69ZiWitf3SFiaTA8249M","Mexico"));
-        tracks.put("10", new NFCTrack("10", "7oDjaRDdf9zNQ8N3yRjQwF", "Sweden"));
-        tracks.put("11", new NFCTrack("11", "596WZD5V9np8nRtuMClJXi", "Russia"));
+        tracks.put("france", new NFCTrack("france", "0DiWol3AO6WpXZgp0goxAV", "France"));
+        tracks.put("usa", new NFCTrack("usa", "6OkSbOk5ajxGAEtFM751C4", "USA"));
+        tracks.put("india", new NFCTrack("india", "0vUjDXHs7XwUnL42ntZaTS", "India"));
+        tracks.put("brazil", new NFCTrack("brazil", "1rundCBCrbT8CNdBRrETGd", "Brazil"));
+        tracks.put("spain", new NFCTrack("spain", "78dMkFd4FarAJYj7NUcutI", "Spain"));
+        tracks.put("italy", new NFCTrack("italy", "7AgXyagsth2Rk5KQNYmQNz", "Italy"));
+        tracks.put("japan", new NFCTrack("japan", "5oGk9tbzYDy5jheoCwVYNI", "Japan"));
+        tracks.put("finland", new NFCTrack("finland", "1FSheI0xU7AjrRNGIsTJrB", "Finland"));
+        tracks.put("mexico", new NFCTrack("mexico", "0i69ZiWitf3SFiaTA8249M","Mexico"));
+        tracks.put("sweden", new NFCTrack("sweden", "7oDjaRDdf9zNQ8N3yRjQwF", "Sweden"));
+        tracks.put("russia", new NFCTrack("russia", "596WZD5V9np8nRtuMClJXi", "Russia"));
 
 
     }
