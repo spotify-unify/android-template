@@ -56,7 +56,7 @@ public class PlayerActivity extends ActionBarActivity {
                 mPlayPauseButton.setImageResource(R.drawable.play);
             } else {
                 mPlayer.resume();
-                mPlayPauseButton.setImageResource(R.drawable.pause);
+                mPlayPauseButton.setImageResource(R.drawable.pausebutton);
             }
 
             readPlayerTrack(playerState);
@@ -142,7 +142,7 @@ public class PlayerActivity extends ActionBarActivity {
         public void onPlayerInitialized(final Player player) {
             mPlayer = player;
             player.play(mPlaylistUri); //mTrack.getUri());
-            mPlayPauseButton.setImageResource(R.drawable.pause);
+            mPlayPauseButton.setImageResource(R.drawable.pausebutton);
             player.setRepeat(true);
         }
 
@@ -178,12 +178,12 @@ public class PlayerActivity extends ActionBarActivity {
 
     public void next(View v) {
         mPlayer.skipToNext();
-        mPlayPauseButton.setImageResource(R.drawable.pause);
+        mPlayPauseButton.setImageResource(R.drawable.pausebutton);
     }
 
     public void previous(View v) {
         mPlayer.skipToPrevious();
-        mPlayPauseButton.setImageResource(R.drawable.pause);
+        mPlayPauseButton.setImageResource(R.drawable.pausebutton);
     }
 
 
