@@ -31,7 +31,7 @@ public class DataExchangeModule {
     private void buildPlaylistDatabase() {
         playlists = new HashMap<String,NFCPlaylist>();
         playlists.put("france", new NFCPlaylist("france", "spotify_france","34yDEWwKE8oX1MbccPpuHq", "France"));
-        playlists.put("usa", new NFCPlaylist("usa", "spotifyusa","042d5Yc8uMmAPJ5JhMLLIj", "USA"));
+        playlists.put("usa", new NFCPlaylist("usa", "marilde","5nf1MRnagH3jFLPLtEFXqv", "USA"));
         playlists.put("india", new NFCPlaylist("india", "marilde","2BNUiaO5WyKjcSOGBcOxGC", "India"));
         playlists.put("brazil", new NFCPlaylist("brazil", "marilde","0T3jXqgQqlThEPST9j1njg", "Brazil"));
         playlists.put("spain", new NFCPlaylist("spain", "lunyadeli","0xoKD4FwJUipesIT0HwSno", "Spain"));
