@@ -38,6 +38,8 @@ public class MainActivity extends ActionBarActivity {
     public static final String KEY_PLAYLIST_URI = "KEY_PLAYLIST_URI";
     public static final String KEY_PLAYLIST_NAME = "KEY_PLAYLIST_NAME";
 
+    private static final int PLAYER_ACTIVITY_REQUEST_CODE = 100;
+
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
     private NfcAdapter mNfcAdapter;
@@ -51,20 +53,17 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Authenticator.authenticate(this);
-        mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
-        mSpotifyClient.setActivity(this);
-        mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
-        mSpotifyClient.setClientListener(mClientListener);
+        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         handleIntent(getIntent());
     }
 
     private void executeTasks() {
-        if(mSpotifyService != null) {
+        /*if(mSpotifyService != null) {
             while(!mTasks.isEmpty()) {
                 mTasks.poll().run();
             }
-        }
+        }*/
     }
 
     private SpotifyClient.ClientListener mClientListener = new SpotifyClient.ClientListener() {
@@ -95,7 +94,6 @@ public class MainActivity extends ActionBarActivity {
 
         }
     };
-
 
 
     private void handleIntent(Intent intent) {
@@ -165,39 +163,41 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(final String result) {
-            if (result != null) {
-                Log.d(TAG, "Read content");
-
-                //we read an nfc tag
-                mTasks.add(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        new AsyncTask<Void, Void, PlaylistHolder>() {
-                            @Override
-                            protected PlaylistHolder doInBackground(Void... voids) {
-                                Log.d(TAG, "Getting track. result: " + result);
-                                Playlist playlist = mDataExchangeModule.getPlaylistByNFCID(result);
-                                PlaylistHolder holder = new PlaylistHolder();
-                                holder.name = playlist.name;
-                                holder.uri = playlist.uri;
-                                return holder;
-                            }
-
-                            @Override
-                            protected void onPostExecute(PlaylistHolder holder) {
-                                //SerializableTrack seralizableTrack = new SerializableTrack(playlist);
-                                //SerializablePlaylist serializablePlaylist = new SerializablePlaylist(playlist);
-                                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                                i.putExtra(KEY_PLAYLIST_URI, holder.uri);
-                                i.putExtra(KEY_PLAYLIST_NAME, holder.name);
-                                startActivity(i);
-                            }
-                        }.execute();
-                    }
-                });
-                executeTasks();
+            if (result == null) {
+                Log.e("YELL", "GOT NULL RESULT");
+                return;
             }
+            Log.d(TAG, "Read content");
+
+            //we read an nfc tag
+
+            new AsyncTask<Void, Void, PlaylistHolder>() {
+                @Override
+                protected PlaylistHolder doInBackground(Void... voids) {
+                    Log.d(TAG, "Getting track. result: " + result);
+                    Playlist playlist = mDataExchangeModule.getPlaylistByNFCID(result);
+                    PlaylistHolder holder = new PlaylistHolder();
+                    holder.name = playlist.name;
+                    holder.uri = playlist.uri;
+                    return holder;
+                }
+
+                @Override
+                protected void onPostExecute(PlaylistHolder holder) {
+                    Log.e("YELL", "FINISHING PLAYER ACTIVITY");
+                    finishActivity(PLAYER_ACTIVITY_REQUEST_CODE);
+                    Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                    i.putExtra(KEY_PLAYLIST_URI, holder.uri);
+                    i.putExtra(KEY_PLAYLIST_NAME, holder.name);
+                    Log.e("YELL", "STARTING PLAYER ACTIVITY");
+                    startActivityForResult(i, PLAYER_ACTIVITY_REQUEST_CODE);
+
+                }
+            }.execute();
+
+
+            executeTasks();
+
         }
     }
 
@@ -237,9 +237,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSpotifyClient.setClientListener(null);
-        mSpotifyClient.setActivity(null);
-        mSpotifyClient.setSpotifyPlaybackServiceListener(null);
     }
 
     /**
@@ -284,7 +281,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode != PLAYER_ACTIVITY_REQUEST_CODE)
+            mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
     }
 
 }

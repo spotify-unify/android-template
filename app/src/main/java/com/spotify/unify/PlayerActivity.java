@@ -69,6 +69,7 @@ public class PlayerActivity extends ActionBarActivity {
         }
 
         String trackUri = playerState.trackUri.substring("spotify:track:".length());
+        if (mSpotifyApi == null) return;
         mSpotifyApi.getService().getTrack(trackUri, new Callback<Track>() {
             @Override
             public void success(Track track, Response response) {
@@ -97,9 +98,7 @@ public class PlayerActivity extends ActionBarActivity {
         mPlaylistTitle = getIntent().getStringExtra(MainActivity.KEY_PLAYLIST_NAME);
         setTitle(getString(R.string.app_name) + " - " + mPlaylistTitle);
 
-        mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
-        mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
-        mSpotifyClient.setClientListener(new SpotifyClient.ClientListener() {
+        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, new SpotifyClient.ClientListener() {
             @Override
             public void onClientReady(SpotifyApi spotifyApi) {
                 mSpotifyApi = spotifyApi;
@@ -110,11 +109,7 @@ public class PlayerActivity extends ActionBarActivity {
 
             }
         });
-        mSpotifyClient.setActivity(this);
 
-
-       /* mTrack = (SerializableTrack) getIntent().getSerializableExtra(MainActivity.KEY_PLAYLIST_URI); */
-        //setTrackViewInfo(title, artistname, imageUrl);
     }
 
     private void setTrackViewInfo(String title, String artistName, String imageUrl) {
@@ -186,8 +181,14 @@ public class PlayerActivity extends ActionBarActivity {
         mPlayPauseButton.setImageResource(R.drawable.pause);
     }
 
+
     public void pause(View v) {
         mPlayer.getPlayerState(mPlayerStateCallback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     // This is for getting background color from the album cover

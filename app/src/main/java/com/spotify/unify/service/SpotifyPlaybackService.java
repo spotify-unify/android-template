@@ -34,6 +34,14 @@ public class SpotifyPlaybackService extends Service implements PlayerNotificatio
         return mPlayer != null;
     }
 
+    public void removeListener() {
+        mListener = NO_OP;
+    }
+
+    public String getToken() {
+        return mToken;
+    }
+
     public interface Listener {
         void onPlayerInitialized(Player player);
         void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState);
