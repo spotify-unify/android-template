@@ -18,6 +18,7 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.unify.models.DataExchangeModule;
+import com.spotify.unify.models.SerializablePlaylist;
 import com.spotify.unify.models.SerializableTrack;
 import com.spotify.unify.service.Authenticator;
 import com.spotify.unify.service.SpotifyClient;
@@ -30,6 +31,8 @@ import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Playlist;
+import kaaes.spotify.webapi.android.models.PlaylistSimple;
 import kaaes.spotify.webapi.android.models.Track;
 
 
@@ -164,7 +167,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(final String result) {
             if (result != null) {
                 Log.d(TAG, "Read content");
 
@@ -173,18 +176,20 @@ public class MainActivity extends ActionBarActivity {
 
                     @Override
                     public void run() {
-                        new AsyncTask<Void, Void, Track>() {
+                        new AsyncTask<Void, Void, String>() {
                             @Override
-                            protected Track doInBackground(Void... voids) {
-                                Track track = mDataExchangeModule.getTrackByNFCID("1");
-                                return track;
+                            protected String doInBackground(Void... voids) {
+                                Log.d(TAG, "Getting track. result: " + result);
+                                Playlist playlist = mDataExchangeModule.getPlaylistByNFCID(result);
+                                return playlist.uri;
                             }
 
                             @Override
-                            protected void onPostExecute(Track track) {
-                                SerializableTrack seralizableTrack = new SerializableTrack(track);
+                            protected void onPostExecute(String uri) {
+                                //SerializableTrack seralizableTrack = new SerializableTrack(playlist);
+                                //SerializablePlaylist serializablePlaylist = new SerializablePlaylist(playlist);
                                 Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                                i.putExtra(KEY_TRACK, seralizableTrack);
+                                i.putExtra(KEY_TRACK, uri);
                                 startActivity(i);
                             }
                         }.execute();
