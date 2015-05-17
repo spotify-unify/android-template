@@ -146,10 +146,12 @@ public class PlayerActivity extends ActionBarActivity {
 
     public void next(View v) {
         mPlayer.skipToNext();
+        mPlayPauseButton.setImageResource(R.drawable.pause);
     }
 
     public void previous(View v) {
         mPlayer.skipToPrevious();
+        mPlayPauseButton.setImageResource(R.drawable.pause);
     }
 
     public void pause(View v) {
