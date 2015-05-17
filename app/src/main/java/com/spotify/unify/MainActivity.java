@@ -13,61 +13,101 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.unify.models.DataExchangeModule;
+import com.spotify.unify.models.SerializableTrack;
+import com.spotify.unify.service.Authenticator;
 import com.spotify.unify.service.SpotifyClient;
 import com.spotify.unify.service.SpotifyPlaybackService;
-import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.User;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 
 public class MainActivity extends ActionBarActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String KEY_TRACK = "KEY_TRACK";
+
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private SpotifyClient mSpotifyClient;
-    private TextView  mName;
-    private ImageView mCover;
     private NfcAdapter mNfcAdapter;
+    private SpotifyService mSpotifyService;
+    private DataExchangeModule mDataExchangeModule;
+    private final Queue<Runnable> mTasks = new LinkedList<>();
+    private static long mLastSpawn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setUpView();
-        mSpotifyClient = new SpotifyClient(this, mPlayerServiceListener, mClientListener);
-
+        Authenticator.authenticate(this);
+        mSpotifyClient = ((UnifyApplication) getApplication()).getSpotifyClient();
+        mSpotifyClient.setActivity(this);
+        mSpotifyClient.setSpotifyPlaybackServiceListener(mPlayerServiceListener);
+        mSpotifyClient.setClientListener(mClientListener);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         handleIntent(getIntent());
     }
 
+    private void executeTasks() {
+        if(mSpotifyService != null) {
+            while(!mTasks.isEmpty()) {
+                mTasks.poll().run();
+            }
+        }
+    }
+
+    private SpotifyClient.ClientListener mClientListener = new SpotifyClient.ClientListener() {
+        @Override
+        public void onClientReady(SpotifyApi spotifyApi) {
+            mSpotifyService = spotifyApi.getService();
+            mDataExchangeModule = new DataExchangeModule(spotifyApi);
+            executeTasks();
+        }
+
+        @Override
+        public void onAccessError() {
+
+        }
+    };
+
+    private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
+        @Override
+        public void onPlayerInitialized(final Player player) {
+        }
+
+        @Override
+        public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
+        }
+
+        @Override
+        public void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails) {
+
+        }
+    };
+
+
+
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
+
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
             String type = intent.getType();
             if (MIME_TEXT_PLAIN.equals(type)) {
 
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                new NdefReaderTask().execute(tag);
+                spawnNfcTask(tag);
 
             } else {
                 Log.d(TAG, "Wrong mime type: " + type);
@@ -81,12 +121,20 @@ public class MainActivity extends ActionBarActivity {
 
             for (String tech : techList) {
                 if (searchedTech.equals(tech)) {
-                    new NdefReaderTask().execute(tag);
+                    spawnNfcTask(tag);
                     break;
                 }
             }
         }
     }
+
+    private void spawnNfcTask(Tag tag) {
+        if (System.currentTimeMillis() - mLastSpawn > 5000) {
+            new NdefReaderTask().execute(tag);
+            mLastSpawn = System.currentTimeMillis();
+        }
+    }
+
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
 
         @Override
@@ -118,10 +166,35 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                mName.setText("Read content: " + result);
+                Log.d(TAG, "Read content");
+
+                //we read an nfc tag
+                mTasks.add(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        new AsyncTask<Void, Void, Track>() {
+                            @Override
+                            protected Track doInBackground(Void... voids) {
+                                Track track = mDataExchangeModule.getTrackByNFCID("1");
+                                return track;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Track track) {
+                                SerializableTrack seralizableTrack = new SerializableTrack(track);
+                                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                                i.putExtra(KEY_TRACK, seralizableTrack);
+                                startActivity(i);
+                            }
+                        }.execute();
+                    }
+                });
+                executeTasks();
             }
         }
     }
+
     private String readText(NdefRecord record) throws UnsupportedEncodingException {
         /*
          * See NFC forum specification for "Text Record Type Definition" at 3.2.1
@@ -138,7 +211,7 @@ public class MainActivity extends ActionBarActivity {
         String utf8 = "UTF-8";
         String utf16 = "UTF-16";
         // Get the Text Encoding
-        String textEncoding = ((payload[0] & 128) == 0) ? utf8: utf16;
+        String textEncoding = ((payload[0] & 128) == 0) ? utf8 : utf16;
 
         // Get the Language Code
         int languageCodeLength = payload[0] & 0063;
@@ -149,9 +222,18 @@ public class MainActivity extends ActionBarActivity {
         // Get the Text
         return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSpotifyClient.setClientListener(null);
+        mSpotifyClient.setActivity(null);
+        mSpotifyClient.setSpotifyPlaybackServiceListener(null);
+    }
+
     /**
      * @param activity The corresponding {@link Activity} requesting the foreground dispatch.
-     * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
+     * @param adapter  The {@link NfcAdapter} used for the foreground dispatch.
      */
     public static void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
@@ -187,28 +269,6 @@ public class MainActivity extends ActionBarActivity {
         handleIntent(intent);
     }
 
-    private void setUpView() {
-        mName = (TextView) findViewById(R.id.hello);
-        mCover = (ImageView) findViewById(R.id.cover);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mSpotifyClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        mSpotifyClient.disconnect();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy(){
-        mSpotifyClient.disconnect();
-        super.onDestroy();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -216,68 +276,5 @@ public class MainActivity extends ActionBarActivity {
         mSpotifyClient.onActivityResult(requestCode, resultCode, intent);
     }
 
-    private SpotifyPlaybackService.Listener mPlayerServiceListener = new SpotifyPlaybackService.Listener() {
-        @Override
-        public void onPlayerInitialized(Player player) {
-            //player.play("spotify:track:2V6yO7x7gQuaRoPesMZ5hr");
-        }
-
-        @Override
-        public void onPlaybackEvent(PlayerNotificationCallback.EventType eventType, PlayerState playerState) {
-
-        }
-
-        @Override
-        public void onPlaybackError(PlayerNotificationCallback.ErrorType errorType, String errorDetails) {
-
-        }
-    };
-
-    private SpotifyClient.ClientListener mClientListener = mClientListener = new SpotifyClient.ClientListener() {
-        @Override
-        public void onClientReady(SpotifyApi spotifyApi) {
-            final SpotifyService spotifyService = spotifyApi.getService();
-
-            spotifyService.getTrack("2V6yO7x7gQuaRoPesMZ5hr", new Callback<Track>() {
-                @Override
-                public void success(Track track, Response response) {
-                    final List<Image> images = track.album.images;
-                    if (!images.isEmpty()) {
-                        Collections.shuffle(images);
-                        final Image randomImage = images.get(0);
-                        Picasso.with(getApplicationContext())
-                                .load(randomImage.url)
-                                .into(mCover);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-
-                }
-            });
-
-            spotifyService.getMe(new Callback<User>() {
-                @Override
-                public void success(User user, Response response) {
-                    mName.setText(
-                            getResources().getString(
-                                    R.string.hello_x,
-                                    user.display_name
-                            )
-                    );
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-
-                }
-            });
-        }
-
-        @Override
-        public void onAccessError() {
-
-        }
-    };
 }
+

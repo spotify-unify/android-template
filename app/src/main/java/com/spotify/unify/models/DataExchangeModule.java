@@ -68,6 +68,6 @@ public class DataExchangeModule {
     public Playlist getPlaylistByNFCID(String NFCID){
         if(!playlists.containsKey(NFCID)) return null;
         NFCPlaylist plist = playlists.get(NFCID);
-        return api.getService().getPlaylist(plist.getOwner_username(),plist.getPlaylistURI());
+        return api.getService().getPlaylist(plist.getOwner_username(), plist.getPlaylistURI());
     }
 }
