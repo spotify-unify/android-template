@@ -51,12 +51,5 @@
         android:textColor="#ffffffff"
         android:textSize="20dp"
         android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="right|top" /><![CDATA[
-
-    ;
-        android:id="@+id/imageView"
-        android:layout_gravity="center" />
-
-
-]]>
+        android:layout_gravity="right|top" />
 </FrameLayout>
